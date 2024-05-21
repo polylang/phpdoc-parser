@@ -36,9 +36,9 @@ class Export_UnitTestCase extends \WP_UnitTestCase {
 	/**
 	 * Parse the file to get the exported data before the first test.
 	 */
-	public function setUp() {
+	public function set_up() {
 
-		parent::setUp();
+		parent::set_up();
 
 		if ( ! $this->export_data ) {
 			$this->parse_file();
@@ -59,7 +59,13 @@ class Export_UnitTestCase extends \WP_UnitTestCase {
 		foreach ( $entity[ $type ] as $exported ) {
 			if ( $exported['line'] == $expected['line'] ) {
 				foreach ( $expected as $key => $expected_value ) {
-					$this->assertEquals( $expected_value, $exported[ $key ] );
+					if ( isset( $exported[ $key ] ) ) {
+						$exported_value = $exported[ $key ];
+					} else {
+						$exported_value = _wp_array_get( $exported, explode( '.', $key ), null );
+					}
+
+					$this->assertEquals( $expected_value, $exported_value );
 				}
 
 				return;

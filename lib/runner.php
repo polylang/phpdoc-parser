@@ -228,10 +228,24 @@ function fix_newlines( $text ) {
 
 	// Replace newline characters within 'code' and 'pre' tags with replacement string.
 	$text = preg_replace_callback(
-		"/(?<=<pre><code>)(.+)(?=<\/code><\/pre>)/s",
+		"/(<pre><code[^>]*>)(.+)(?=<\/code><\/pre>)/sU",
 		function ( $matches ) use ( $replacement_string ) {
-			return preg_replace( '/[\n\r]/', $replacement_string, $matches[1] );
+			return preg_replace( '/[\n\r]/', $replacement_string, $matches[1] . $matches[2] );
 		},
+		$text
+	);
+
+	// Insert a newline when \n follows `.`.
+	$text = preg_replace(
+		"/\.[\n\r]+(?!\s*[\n\r])/m",
+		'.<br>',
+		$text
+	);
+
+	// Insert a new line when \n is followed by what appears to be a list.
+	$text = preg_replace(
+		"/[\n\r]+(\s+[*-] )(?!\s*[\n\r])/m",
+		'<br>$1',
 		$text
 	);
 
@@ -480,5 +494,8 @@ function format_description( $description ) {
 		$parsedown   = \Parsedown::instance();
 		$description = $parsedown->line( $description );
 	}
+
+	$description = fix_newlines( $description );
+
 	return $description;
 }
